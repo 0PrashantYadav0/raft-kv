@@ -1,0 +1,15 @@
+# Binaries and build output
+/bin/
+/data/
+coverage.out
+*.test
+
+# Editor / OS noise
+.DS_Store
+.idea/
+.vscode/
+
+# Never commit secrets or env
+.env
+*.pem
+*.key
