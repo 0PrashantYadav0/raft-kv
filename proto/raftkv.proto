@@ -1,0 +1,90 @@
+syntax = "proto3";
+
+package raftkv.v1;
+
+option go_package = "github.com/prashant/raft-kv/internal/transport/pb;pb";
+
+// RaftService carries the three Raft RPCs between cluster peers.
+service RaftService {
+  rpc RequestVote(RequestVoteRequest) returns (RequestVoteResponse);
+  rpc AppendEntries(AppendEntriesRequest) returns (AppendEntriesResponse);
+  rpc InstallSnapshot(InstallSnapshotRequest) returns (InstallSnapshotResponse);
+}
+
+message LogEntry {
+  uint64 term = 1;
+  uint64 index = 2;
+  bytes command = 3;
+}
+
+message RequestVoteRequest {
+  uint64 term = 1;
+  string candidate_id = 2;
+  uint64 last_log_index = 3;
+  uint64 last_log_term = 4;
+  bool pre_vote = 5;
+}
+
+message RequestVoteResponse {
+  uint64 term = 1;
+  bool vote_granted = 2;
+}
+
+message AppendEntriesRequest {
+  uint64 term = 1;
+  string leader_id = 2;
+  uint64 prev_log_index = 3;
+  uint64 prev_log_term = 4;
+  repeated LogEntry entries = 5;
+  uint64 leader_commit = 6;
+}
+
+message AppendEntriesResponse {
+  uint64 term = 1;
+  bool success = 2;
+  uint64 conflict_term = 3;
+  uint64 conflict_index = 4;
+}
+
+message InstallSnapshotRequest {
+  uint64 term = 1;
+  string leader_id = 2;
+  uint64 last_included_index = 3;
+  uint64 last_included_term = 4;
+  uint64 offset = 5;
+  bytes data = 6;
+  bool done = 7;
+}
+
+message InstallSnapshotResponse {
+  uint64 term = 1;
+}
+
+// KVService is the client-facing API for the key-value store.
+service KVService {
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc Put(PutRequest) returns (PutResponse);
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
+}
+
+message GetRequest { string key = 1; }
+message GetResponse {
+  bool found = 1;
+  bytes value = 2;
+  string leader_hint = 3;
+}
+
+message PutRequest {
+  string key = 1;
+  bytes value = 2;
+}
+message PutResponse {
+  bool ok = 1;
+  string leader_hint = 2;
+}
+
+message DeleteRequest { string key = 1; }
+message DeleteResponse {
+  bool ok = 1;
+  string leader_hint = 2;
+}
