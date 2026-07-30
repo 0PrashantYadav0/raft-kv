@@ -132,12 +132,15 @@ PEERS=n1=127.0.0.1:9001,n2=127.0.0.1:9002,n3=127.0.0.1:9003
 ./bin/raftkvctl --peers $PEERS del foo
 ```
 
-## Testing
+## Testing & development
 
 ```bash
 make test     # all unit + integration tests
 make race     # the whole suite under the race detector
 make cover    # coverage summary
+make fmt      # format Go sources (skips generated pb stubs)
+make vet      # static checks
+make install  # install raftkvd / raftkvctl into $(go env GOPATH)/bin
 ```
 
 The suite covers, on both the in-memory transport and the **real gRPC stack**:
