@@ -4,7 +4,7 @@
 GOPATH_BIN := $(shell go env GOPATH)/bin
 PROXY_ENV  := HTTPS_PROXY=http://sysproxy.wal-mart.com:8080 HTTP_PROXY=http://sysproxy.wal-mart.com:8080
 
-.PHONY: all build test race vet cover proto tidy demo clean
+.PHONY: all build test race vet fmt cover proto tidy demo install clean
 
 all: vet test build
 
@@ -20,6 +20,9 @@ race:
 
 vet:
 	go vet ./...
+
+fmt:
+	gofmt -w $$(find . -name '*.go' -not -path './internal/transport/pb/*')
 
 cover:
 	go test ./... -coverprofile=coverage.out -covermode=atomic
@@ -38,5 +41,9 @@ tidy:
 demo: build
 	./scripts/demo.sh
 
+install: build
+	install -d $(GOPATH_BIN)
+	install -m 755 bin/raftkvd bin/raftkvctl $(GOPATH_BIN)/
+
 clean:
-	rm -rf bin data coverage.out
+	rm -rf bin data coverage.out coverage.html

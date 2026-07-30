@@ -2,12 +2,16 @@
 /bin/
 /data/
 coverage.out
+coverage.html
 *.test
+vendor/
 
 # Editor / OS noise
 .DS_Store
 .idea/
 .vscode/
+*.swp
+*~
 
 # Never commit secrets or env
 .env
