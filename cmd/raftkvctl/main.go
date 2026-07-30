@@ -19,10 +19,11 @@ import (
 func main() {
 	peersFlag := flag.String("peers", "", "comma-separated id=addr list")
 	timeout := flag.Duration("timeout", 5*time.Second, "request timeout")
+	flag.Usage = usage
 	flag.Parse()
 
 	args := flag.Args()
-	if *peersFlag == "" || len(args) < 2 {
+	if *peersFlag == "" || len(args) < 1 {
 		usage()
 		os.Exit(2)
 	}
@@ -54,6 +55,10 @@ func main() {
 		}
 		fmt.Println("OK")
 	case "get":
+		if len(args) != 2 {
+			usage()
+			os.Exit(2)
+		}
 		v, found, err := c.Get(ctx, args[1])
 		if err != nil {
 			fail(err)
@@ -64,11 +69,16 @@ func main() {
 		}
 		fmt.Println(string(v))
 	case "del", "delete":
+		if len(args) != 2 {
+			usage()
+			os.Exit(2)
+		}
 		if err := c.Delete(ctx, args[1]); err != nil {
 			fail(err)
 		}
 		fmt.Println("OK")
 	default:
+		fmt.Fprintf(os.Stderr, "unknown command %q\n", args[0])
 		usage()
 		os.Exit(2)
 	}
@@ -80,7 +90,21 @@ func fail(err error) {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: raftkvctl --peers id=addr,... <put key value | get key | del key>")
+	fmt.Fprintln(os.Stderr, `raftkvctl — CLI for a raft-kv cluster
+
+Usage:
+  raftkvctl --peers id=addr,... put <key> <value>
+  raftkvctl --peers id=addr,... get <key>
+  raftkvctl --peers id=addr,... del <key>
+
+Flags:
+  --peers     comma-separated id=addr list (required)
+  --timeout   per-request timeout (default 5s)
+
+Examples:
+  raftkvctl --peers n1=127.0.0.1:9001,n2=127.0.0.1:9002 put foo bar
+  raftkvctl --peers n1=127.0.0.1:9001 get foo
+  raftkvctl --peers n1=127.0.0.1:9001 del foo`)
 }
 
 func parseAddrs(s string) (map[string]string, error) {
